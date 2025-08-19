@@ -32,7 +32,7 @@
     
     protected override async Task OnInitializedAsync()
     {
-        var matches = await StreamService.GetMatchesAsync(GetMatchType.AllToday);
+        var matches = await StreamService.GetMatchesAsync(GetMatchType.Live);
 
         _sportMatches = matches
             .Where(x => x.category is SportId.Baseball or SportId.UFC or SportId.Hockey)

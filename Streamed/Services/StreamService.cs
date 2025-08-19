@@ -12,6 +12,8 @@ public class StreamService(string baseUrl) : IStreamService
         BaseAddress = new Uri(baseUrl ?? throw new ArgumentNullException(nameof(baseUrl))),
     };
 
+
+
     public async Task<IEnumerable<Match>> GetMatchesAsync(GetMatchType type, string? sport = null)
     {
         if (type is GetMatchType.Sport or GetMatchType.SportPopular && string.IsNullOrEmpty(sport)) throw new ArgumentException("If type is GetMatchType.Sport or GetMatchType.SportPopular, a sport must be given");
@@ -27,8 +29,11 @@ public class StreamService(string baseUrl) : IStreamService
     }
 
 
-    public async Task<MatchStream?> GetMatchStreamAsync(string matchId, GetStreamType type = GetStreamType.Alpha)
-    {
-        return await _http.GetFromJsonAsync<MatchStream>($"api/stream/{type.ToDescriptionString()}/{matchId}");
-    }
+
+    public async Task<IEnumerable<MatchStream>> GetMatchStreamsAsync(string matchId, GetStreamType type = GetStreamType.Alpha)
+        => await GetMatchStreamsAsync(matchId, type.ToDescriptionString());
+
+    public async Task<IEnumerable<MatchStream>> GetMatchStreamsAsync(string matchId, string type)
+        => await _http.GetFromJsonAsync<MatchStream[]>($"api/stream/{type}/{matchId}") ?? [];
+
 }
