@@ -1,6 +1,6 @@
 ﻿@page "/"
+
 @using Streamed.Models
-@using Streamed.Extensions
 
 @inject Services.IStreamService StreamService
 
@@ -9,9 +9,9 @@
 @foreach (var sportMatches in _sportMatches)
 {
     <MudText Class="mt-8" Typo="Typo.h5"><b>@sportMatches.Key.ToUpper()</b></MudText>
-    
+
     <MudDivider Class="my-2" />
-    
+
     <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
         @foreach (var match in sportMatches.Take(4))
         {
@@ -29,13 +29,13 @@
 @code {
 
     private IEnumerable<IGrouping<string, Models.Match>> _sportMatches = [];
-    
+
     protected override async Task OnInitializedAsync()
     {
-        var matches = await StreamService.GetMatchesAsync(GetMatchType.Live);
+        var matches = await StreamService.GetMatchesAsync(GetMatchType.AllToday);
 
         _sportMatches = matches
-            .Where(x => x.category is SportId.Baseball or SportId.UFC or SportId.Hockey)
+            .Where(x => SportTypes.TryGet(x.category, out var _))
             .GroupBy(x => x.category);
     }
 

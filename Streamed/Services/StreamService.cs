@@ -4,7 +4,7 @@ using Streamed.Models;
 
 namespace Streamed.Services;
 
-public class StreamService(string baseUrl) : IStreamService
+public class StreamService(string baseUrl, ICacheService cacheService) : IStreamService
 {
 
     private readonly HttpClient _http = new()
@@ -12,6 +12,30 @@ public class StreamService(string baseUrl) : IStreamService
         BaseAddress = new Uri(baseUrl ?? throw new ArgumentNullException(nameof(baseUrl))),
     };
 
+    private readonly ICacheService _cacheService = cacheService;
+
+
+    private async Task<T?> HttpGetAsync<T>(string url, bool useCache = true, int cacheDurationMins = 10)
+    {
+        if (useCache)
+        {
+            return await _cacheService.GetOrAddAsync(
+                url,
+                async () => await HttpGetAsync<T>(url, false),
+                TimeSpan.FromMinutes(cacheDurationMins)
+                );
+        }
+
+        try
+        {
+            return await _http.GetFromJsonAsync<T>(url);
+        }
+        catch (Exception ex)
+        {
+            return default;
+        }
+        
+    }
 
 
     public async Task<IEnumerable<Match>> GetMatchesAsync(GetMatchType type, string? sport = null)
@@ -24,8 +48,8 @@ public class StreamService(string baseUrl) : IStreamService
             GetMatchType.SportPopular => $"{sport}/popular",
             _ => type.ToDescriptionString()
         };
-        
-        return await _http.GetFromJsonAsync<Match[]>($"api/matches/{urlArg}") ?? [];
+
+        return await HttpGetAsync<Match[]>($"api/matches/{urlArg}") ?? [];
     }
 
 
@@ -34,6 +58,6 @@ public class StreamService(string baseUrl) : IStreamService
         => await GetMatchStreamsAsync(matchId, type.ToDescriptionString());
 
     public async Task<IEnumerable<MatchStream>> GetMatchStreamsAsync(string matchId, string type)
-        => await _http.GetFromJsonAsync<MatchStream[]>($"api/stream/{type}/{matchId}") ?? [];
+        => await HttpGetAsync<MatchStream[]>($"api/stream/{type}/{matchId}") ?? [];
 
 }

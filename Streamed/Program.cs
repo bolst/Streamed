@@ -10,10 +10,14 @@ builder.Services.AddMudServices();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<ICacheService, CacheService>();
+
 builder.Services.AddScoped<IStreamService>(sp =>
 {
     var baseUrl = Environment.GetEnvironmentVariable("BaseUrl__Streamed");
-    return new StreamService(baseUrl);
+    var cacheService = sp.GetRequiredService<ICacheService>();
+    return new StreamService(baseUrl, cacheService);
 });
 
 var app = builder.Build();
