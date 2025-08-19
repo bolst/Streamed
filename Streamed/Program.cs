@@ -1,4 +1,5 @@
 using Streamed.Components;
+using Streamed.Services;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,12 @@ builder.Services.AddMudServices();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddScoped<IStreamService>(sp =>
+{
+    var baseUrl = Environment.GetEnvironmentVariable("BaseUrl__Streamed");
+    return new StreamService(baseUrl);
+});
 
 var app = builder.Build();
 

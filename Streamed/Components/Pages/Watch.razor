@@ -1,0 +1,31 @@
+@page "/watch/{MatchId}"
+
+@inject Services.IStreamService StreamService
+
+
+<PageTitle>Watch</PageTitle>
+
+<div class="d-flex justify-center flex-row" style="width: 100%">
+    <MudPaper Width="100%" MaxWidth="700px" Height="400px">
+        &nbsp;
+    </MudPaper>
+</div>
+
+
+
+@code {
+
+    [Parameter, EditorRequired] 
+    public required string MatchId { get; set; }
+
+    private string? _matchId;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(_matchId) && _matchId == MatchId) return;
+
+        _matchId = MatchId;
+        
+        var stream = await StreamService.GetMatchStreamAsync(_matchId, GetStreamType.Charlie);
+    }
+}

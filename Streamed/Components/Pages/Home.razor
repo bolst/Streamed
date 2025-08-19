@@ -1,5 +1,42 @@
 ﻿@page "/"
+@using Streamed.Models
+@using Streamed.Extensions
+
+@inject Services.IStreamService StreamService
 
 <PageTitle>Home</PageTitle>
 
-hello there
+@foreach (var sportMatches in _sportMatches)
+{
+    <MudText Class="mt-8" Typo="Typo.h5"><b>@sportMatches.Key.ToUpper()</b></MudText>
+    
+    <MudDivider Class="my-2" />
+    
+    <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
+        @foreach (var match in sportMatches.Take(4))
+        {
+            <MudLink Href="@($"watch/{match.id}")" Underline="Underline.Hover">
+                <MudPaper Class="pa-2 d-flex justify-space-between align-start flex-column" Height="250px" Width="220px">
+                    <MudImage Src="@match.poster" Height="150" Width="200" ObjectFit="ObjectFit.Contain" FallbackSrc="https://gomomentus.com/hubfs/Momentus%20Website%20Assets%20-%20NB%202023/Solutions%20-%20Stadiums%20and%20Arenas/5%20Stadium%20and%20Arena%20Card.jpg" />
+                    <MudText><b>@match.title.Caption()</b></MudText>
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Text" Label="true">@match.MatchDate.ToString("g") EST</MudChip>
+                </MudPaper>
+            </MudLink>
+        }
+    </MudStack>
+}
+
+@code {
+
+    private IEnumerable<IGrouping<string, Models.Match>> _sportMatches = [];
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var matches = await StreamService.GetMatchesAsync(GetMatchType.AllToday);
+
+        _sportMatches = matches
+            .Where(x => x.category is SportId.Baseball or SportId.UFC or SportId.Hockey)
+            .GroupBy(x => x.category);
+    }
+
+}
