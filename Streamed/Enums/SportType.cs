@@ -26,7 +26,7 @@ public enum SportType
 
 public class SportTypes
 {
-    public static IReadOnlyList<SportType> All { get; } = [SportType.Hockey, SportType.Baseball, SportType.Fight, SportType.Basketball, SportType.Golf];
+    public static IReadOnlyList<SportType> All { get; } = [SportType.Hockey, SportType.Baseball, SportType.Basketball, SportType.Fight, SportType.Golf];
 
     private static IReadOnlyDictionary<string, SportType> _sportDict = All.ToDictionary(x => x.ToDescriptionString());
 

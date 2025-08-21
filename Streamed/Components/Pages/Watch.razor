@@ -1,6 +1,7 @@
 @page "/watch/{MatchId}"
 
 @inject Services.IStreamService StreamService
+@inject IJSRuntime JS
 
 
 <PageTitle>Watch</PageTitle>
@@ -21,14 +22,14 @@ else
     {
         <div class="d-flex align-center flex-row">
             <MudText Typo="Typo.h6">@_match.title (@_match.MatchDate.ToString("g") EST)</MudText>
-            <MudChip T="string" Text="@_match.category.ToUpper()" Variant="Variant.Text" Color="Color.Primary" Label="true" />
+            <MudChip T="string" Text="@_match.category.ToUpper()" Variant="Variant.Text" Color="Color.Tertiary" Label="true" />
         </div>
         <MudDivider Class="pt-2 pb-4" />
         <div class="d-flex align-center flex-column flex-wrap" style="width: 100%">
             <MudPaper Class="d-flex align-center justify-center" Width="100%" MaxWidth="500px" Height="300px">
                 @if (_selectedStream is not null)
                 {
-                    <iframe src="@_selectedStream.embedUrl" allowfullscreen />
+                    <iframe src="@_selectedStream.embedUrl" allowfullscreen></iframe>
                 }
                 else
                 {

@@ -1,29 +1,27 @@
 ﻿@page "/"
 
-@using Streamed.Models
-
 @inject Services.IStreamService StreamService
+@inject NavigationManager Navigation
 
 <PageTitle>Home</PageTitle>
 
 @foreach (var sportMatches in _sportMatches)
 {
-    <MudText Class="mt-8" Typo="Typo.h5"><b>@sportMatches.Key.ToUpper()</b></MudText>
-
+    <div class="mt-8 d-flex align-center flex-row gap-3">
+        <MudText Typo="Typo.h5"><b>@sportMatches.Key.ToUpper()</b></MudText>
+        <MudChip T="string" Color="Color.Tertiary" Variant="Variant.Text" Label="true"><b>@sportMatches.Count() EVENTS</b></MudChip>
+    </div>
+    
     <MudDivider Class="my-2" />
-
-    <MudStack AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Row>
-        @foreach (var match in sportMatches.Take(4))
-        {
-            <MudLink Href="@($"watch/{match.id}")" Underline="Underline.Hover">
-                <MudPaper Class="pa-2 d-flex justify-space-between align-start flex-column" Height="250px" Width="220px">
-                    <MudImage Src="@match.poster" Height="150" Width="200" ObjectFit="ObjectFit.Contain" FallbackSrc="https://gomomentus.com/hubfs/Momentus%20Website%20Assets%20-%20NB%202023/Solutions%20-%20Stadiums%20and%20Arenas/5%20Stadium%20and%20Arena%20Card.jpg" />
-                    <MudText><b>@match.title.Caption()</b></MudText>
-                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Text" Label="true">@match.MatchDate.ToString("g") EST</MudChip>
-                </MudPaper>
-            </MudLink>
-        }
-    </MudStack>
+    
+    <div class="d-flex justify-center flex-row" style="width: 100%">
+        <MudDataGrid T="Models.Match" Items="sportMatches.ToList()" Style="width: 100%; max-width: 700px" RowClick="@(x => Navigation.NavigateTo($"/watch/{x.Item.id}"))" Height="300px" RowClass="cursor-pointer" Striped Hover FixedHeader>
+            <Columns>
+                <PropertyColumn Property="x => x.title" Title="Event" CellStyle="font-weight: bold" />
+                <PropertyColumn Property="x => x.MatchDate" Title="Date" Format="g" InitialDirection="SortDirection.Descending"/>
+            </Columns>
+        </MudDataGrid>
+    </div>
 }
 
 @code {
@@ -36,7 +34,8 @@
 
         _sportMatches = matches
             .Where(x => SportTypes.TryGet(x.category, out var _))
+            .Where(x => x.MatchDate.Date == DateTime.UtcNow.AddHours(-4).Date)
+            .OrderBy(x => x.date)
             .GroupBy(x => x.category);
     }
-
 }

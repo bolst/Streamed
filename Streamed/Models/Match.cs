@@ -12,6 +12,10 @@ public sealed record Match
     public bool popular { get; init; }
     public MatchTeams? teams { get; init; }
     public IEnumerable<Source> sources { get; init; }
+
+    public string Image => poster is not null
+        ? (Environment.GetEnvironmentVariable("BaseUrl__Streamed") + poster)
+        : "https://gomomentus.com/hubfs/Momentus%20Website%20Assets%20-%20NB%202023/Solutions%20-%20Stadiums%20and%20Arenas/5%20Stadium%20and%20Arena%20Card.jpg";
     
     public DateTimeOffset MatchDate => DateTimeOffset.FromUnixTimeMilliseconds(date).AddHours(-4);
 }

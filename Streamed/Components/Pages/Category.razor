@@ -1,0 +1,48 @@
+@page "/category/{category}"
+
+@inject Services.IStreamService StreamService
+@inject NavigationManager Navigation
+
+<div class="mt-2 d-flex align-center flex-row gap-3">
+    <MudText Typo="Typo.h5"><b>@category.ToUpper()</b></MudText>
+    <MudChip T="string" Color="Color.Tertiary" Variant="Variant.Text" Label="true"><b>@_matches.Count() EVENTS</b></MudChip>
+</div>
+
+<MudDivider Class="my-2" />
+
+<div class="d-flex justify-center flex-row" style="width: 100%">
+    <MudDataGrid T="Models.Match" Items="_matches" Style="width: 100%; max-width: 700px" RowClick="@(x => Navigation.NavigateTo($"/watch/{x.Item.id}"))" Height="80vh" RowClass="cursor-pointer" Striped Hover FixedHeader>
+        <Columns>
+            <PropertyColumn Property="x => x.title" Title="Event" CellStyle="font-weight: bold">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2">@context.Item.title.Caption()</MudText>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.MatchDate" Title="Date" Format="g" InitialDirection="SortDirection.Descending"/>
+        </Columns>
+    </MudDataGrid>
+</div>
+
+
+@code {
+    
+    [Parameter, EditorRequired]
+    public required string category { get; set; }
+
+    private string? _category;
+
+    private IEnumerable<Models.Match> _matches = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(_category) && category == _category) return;
+
+        _category = category;
+        
+        _matches = (await StreamService.GetMatchesAsync(GetMatchType.Live))
+            .Where(x => x.category == _category)
+            .Where(x => x.MatchDate.Date == DateTime.UtcNow.AddHours(-4).Date)
+            .OrderBy(x => x.date);
+    }
+
+}
