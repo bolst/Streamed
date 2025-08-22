@@ -1,7 +1,6 @@
 @page "/watch/{MatchId}"
 
 @inject Services.IStreamService StreamService
-@inject IJSRuntime JS
 
 
 <PageTitle>Watch</PageTitle>
@@ -20,13 +19,15 @@ else
     }
     else
     {
-        <div class="d-flex align-center flex-row">
-            <MudText Typo="Typo.h6">@_match.title (@_match.MatchDate.ToString("g") EST)</MudText>
-            <MudChip T="string" Text="@_match.category.ToUpper()" Variant="Variant.Text" Color="Color.Tertiary" Label="true" />
+        <div class="d-flex align-center flex-row flex-wrap mb-6">
+            <MudText Typo="Typo.h6">@_match.title</MudText>
+            <MudFlexBreak />
+            <MudChip T="string" Text="@_category?.Value.ToUpper()" Icon="@_category?.Icon" Class="@_category?.IconClass" Variant="Variant.Text" Label="true"/>
+            <MudChip T="string" Text="@($"{_match.MatchDate:ddd hh:mmtt} EST")" Icon="@Icons.Material.Filled.AccessTime" Color="Color.Info" Variant="Variant.Text" Label="true" />
         </div>
-        <MudDivider Class="pt-2 pb-4" />
+
         <div class="d-flex align-center flex-column flex-wrap" style="width: 100%">
-            <MudPaper Class="d-flex align-center justify-center" Width="100%" MaxWidth="500px" Height="300px">
+            <MudPaper Class="d-flex align-center justify-center" Width="100%" Height="50vw" MaxHeight="400px">
                 @if (_selectedStream is not null)
                 {
                     <iframe src="@_selectedStream.embedUrl" allowfullscreen></iframe>
@@ -37,14 +38,14 @@ else
                 }
             </MudPaper>
 
-            <MudChipSet Style="width: 100%; max-width: 850px" @bind-SelectedValue="_selectedStream" SelectionMode="SelectionMode.ToggleSelection" Color="Color.Default" SelectedColor="Color.Info" Variant="Variant.Filled">
+            <MudChipSet Class="my-4" Style="width: 100%;" @bind-SelectedValue="_selectedStream" SelectionMode="SelectionMode.ToggleSelection" Color="Color.Default" SelectedColor="Color.Info" Variant="Variant.Filled">
                 @foreach(var stream in _selectedSource)
                 {
                     <MudChip Value="stream" Text="@($"Stream {stream.streamNo}")" Icon="@(stream.hd ? Icons.Material.Filled.Hd : "")" IconColor="Color.Error" />
                 }
             </MudChipSet>
 
-            <MudList Style="width: 100%; max-width: 500px" @bind-SelectedValue="_selectedSource" SelectionMode="SelectionMode.SingleSelection" Color="Color.Primary" Dense>
+            <MudList Style="width: 100%;" @bind-SelectedValue="_selectedSource" SelectionMode="SelectionMode.SingleSelection" Color="Color.Primary" Dense>
                 @foreach(var source in _sources)
                 {
                     <MudListItem Value="source.Value" Text="@source.Key.ToUpper()" SecondaryText="@($"{source.Value.Count()} streams")" />
@@ -63,6 +64,7 @@ else
 
     private string? _matchId;
     private Models.Match? _match;
+    private Models.CustomTypes.Category? _category;
     private Dictionary<string, IEnumerable<Models.MatchStream>> _sources = [];
 
     private bool _loading;
@@ -79,7 +81,7 @@ else
 
         _loading = true;
 
-        var matches = await StreamService.GetMatchesAsync(GetMatchType.Live);
+        var matches = await StreamService.GetMatchesAsync(GetMatchType.AllToday);
         _match = matches.FirstOrDefault(x => x.id == MatchId);
 
         if (_match is not null)
@@ -90,6 +92,7 @@ else
                 _sources.Add(source.source, streams);
             }
 
+            Models.CustomTypes.Categories.TryGet(_match.category, out _category);
             _selectedSource = _sources.FirstOrDefault().Value;
             _selectedStream = _selectedSource.FirstOrDefault();
         }

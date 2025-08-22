@@ -8,18 +8,33 @@
 
 
 <MudLayout>
-    <MudAppBar Class="d-flex justify-center flex-row border-b-2 mud-border-secondary" Dense Elevation="1">
+    <MudAppBar Class="border-b-2 mud-border-secondary" ToolBarClass="d-flex justify-space-between align-center flex-row" Dense Elevation="1">
         <MudButtonGroup OverrideStyles="false">
-            <MudIconButton Icon="@Icons.Material.Filled.Home" Href="/"/>
-            @foreach (var sport in SportTypes.All)
+            <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert>
+                <MudIconButton Href="/" Icon="@Icons.Material.Filled.Home" Color="Color.Primary" />
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert>
+                <MudButton Href="/" StartIcon="@Icons.Material.Filled.Home">HOME</MudButton>
+            </MudHidden>
+        </MudButtonGroup>
+
+        <MudButtonGroup OverrideStyles="false" Class="ml-xs-n12 ml-md-n20">
+            @foreach (var category in Models.CustomTypes.Categories.All)
             {
-                <MudButton Href="@($"/category/{sport.ToDescriptionString()}")">@sport.ToDescriptionString()</MudButton>
+                <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert>
+                    <MudIconButton Class="@($"mx-1 {category.IconClass}")" Href="@($"/category/{category.Value}")" Icon="@category.Icon"/>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert>
+                    <MudButton Class="mx-1" IconClass="@category.IconClass" Href="@($"/category/{category.Value}")" StartIcon="@category.Icon">@category.Value</MudButton>
+                </MudHidden>
             }
         </MudButtonGroup>
+        
+        <div>&nbsp;</div>
     </MudAppBar>
     <MudMainContent>
         <div class="d-flex justify-center flex-row" style="width: 100%">
-            <MudPaper Class="pt-4 px-4" Width="100%" MaxWidth="800px" Elevation="0">
+            <MudPaper Class="pa-4" Width="100%" MaxWidth="800px" Elevation="0">
                 @Body
             </MudPaper>
         </div>
@@ -41,6 +56,7 @@
         PaletteDark = new()
         {
             Primary = "E4E4E4",
+            TextPrimary = "#FFFFFF",
             Secondary = "#28282C",
             Tertiary = "#656DB9",
             Surface = "#1A1B1C",

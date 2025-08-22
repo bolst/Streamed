@@ -1,27 +1,41 @@
 @page "/category/{category}"
 
 @inject Services.IStreamService StreamService
-@inject NavigationManager Navigation
 
-<div class="mt-2 d-flex align-center flex-row gap-3">
-    <MudText Typo="Typo.h5"><b>@category.ToUpper()</b></MudText>
-    <MudChip T="string" Color="Color.Tertiary" Variant="Variant.Text" Label="true"><b>@_matches.Count() EVENTS</b></MudChip>
-</div>
+@if (_category is not null)
+{
+    <PageTitle>@_category.Value.Title()</PageTitle>
 
-<MudDivider Class="my-2" />
+    <div class="mt-2 d-flex align-center flex-row gap-3">
+        <MudIcon Icon="@_category.Icon" Class="@_category.IconClass" Size="Size.Large" />
+        <MudText Typo="Typo.h4"><b>@_category.Value.Title()</b></MudText>
+        <MudChip T="string" Color="Color.Tertiary" Variant="Variant.Filled" Label="true"><b>@_matches.Count() EVENTS</b></MudChip>
+    </div>
 
-<div class="d-flex justify-center flex-row" style="width: 100%">
-    <MudDataGrid T="Models.Match" Items="_matches" Style="width: 100%; max-width: 700px" RowClick="@(x => Navigation.NavigateTo($"/watch/{x.Item.id}"))" Height="80vh" RowClass="cursor-pointer" Striped Hover FixedHeader>
-        <Columns>
-            <PropertyColumn Property="x => x.title" Title="Event" CellStyle="font-weight: bold">
-                <CellTemplate>
-                    <MudText Typo="Typo.body2">@context.Item.title.Caption()</MudText>
-                </CellTemplate>
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.MatchDate" Title="Date" Format="g" InitialDirection="SortDirection.Descending"/>
-        </Columns>
-    </MudDataGrid>
-</div>
+    <MudDivider Class="my-2" />
+
+    <MudGrid>
+        @foreach (var match in _matches)
+        {
+            <MudItem xs="6" sm="4" md="3">
+                <MudLink Href="@($"/watch/{match.id}")">
+                    <div class="d-flex flex-column align-start justify-start" style="width: 100%; height: 280px">
+                        <MudImage Src="@match.Image" FallbackSrc="https://gomomentus.com/hubfs/Momentus%20Website%20Assets%20-%20NB%202023/Solutions%20-%20Stadiums%20and%20Arenas/5%20Stadium%20and%20Arena%20Card.jpg" Fluid />
+                        <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" Label="true">@match.MatchDate.ToString("ddd h:mmtt") EST</MudChip>
+                        <div class="d-flex align-center flex-row">
+                            <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" Label="true">@match.sources.Count() CHANNELS</MudChip>
+                            @if (match.popular)
+                            {
+                                <MudIcon Class="ml-2" Icon="@Icons.Material.Filled.Groups" Size="Size.Small" Color="Color.Error" Title="Popular" />
+                            }
+                        </div>
+                        <MudText Typo="Typo.subtitle2"><b>@match.title.Caption()</b></MudText>
+                    </div>
+                </MudLink>
+            </MudItem>
+        }
+    </MudGrid>
+}
 
 
 @code {
@@ -29,20 +43,22 @@
     [Parameter, EditorRequired]
     public required string category { get; set; }
 
-    private string? _category;
+    private Models.CustomTypes.Category? _category;
 
     private IEnumerable<Models.Match> _matches = [];
 
     protected override async Task OnParametersSetAsync()
     {
-        if (!string.IsNullOrEmpty(_category) && category == _category) return;
+        if (_category is not null && category == _category) return;
 
-        _category = category;
+        if (!Models.CustomTypes.Categories.TryGet(category, out _category))
+            return;
         
-        _matches = (await StreamService.GetMatchesAsync(GetMatchType.Live))
+        _matches = (await StreamService.GetMatchesAsync(GetMatchType.AllToday))
             .Where(x => x.category == _category)
             .Where(x => x.MatchDate.Date == DateTime.UtcNow.AddHours(-4).Date)
-            .OrderBy(x => x.date);
+            .OrderByDescending(x => x.popular)
+            .ThenBy(x => x.date);
     }
 
 }

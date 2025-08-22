@@ -5,37 +5,36 @@
 
 <PageTitle>Home</PageTitle>
 
-@foreach (var sportMatches in _sportMatches)
+@foreach (var category in Models.CustomTypes.Categories.All)
 {
-    <div class="mt-8 d-flex align-center flex-row gap-3">
-        <MudText Typo="Typo.h5"><b>@sportMatches.Key.ToUpper()</b></MudText>
-        <MudChip T="string" Color="Color.Tertiary" Variant="Variant.Text" Label="true"><b>@sportMatches.Count() EVENTS</b></MudChip>
-    </div>
+    var matches = _sportMatches.Where(x => x.category == category).ToList();
     
-    <MudDivider Class="my-2" />
-    
-    <div class="d-flex justify-center flex-row" style="width: 100%">
-        <MudDataGrid T="Models.Match" Items="sportMatches.ToList()" Style="width: 100%; max-width: 700px" RowClick="@(x => Navigation.NavigateTo($"/watch/{x.Item.id}"))" Height="300px" RowClass="cursor-pointer" Striped Hover FixedHeader>
-            <Columns>
-                <PropertyColumn Property="x => x.title" Title="Event" CellStyle="font-weight: bold" />
-                <PropertyColumn Property="x => x.MatchDate" Title="Date" Format="g" InitialDirection="SortDirection.Descending"/>
-            </Columns>
-        </MudDataGrid>
-    </div>
+    <MudDataGrid T="Models.Match" Items="matches" Class="px-4 mb-8 mud-border-secondary border-2" Style="width: 100%;" RowClick="@(x => Navigation.NavigateTo($"/watch/{x.Item.id}"))" RowClass="cursor-pointer" ShowColumnOptions="false" Striped Hover>
+        <ToolBarContent>
+            <div class="d-flex align-center flex-row gap-3">
+                <MudText Typo="Typo.h5"><b>@category.Value.ToUpper()</b></MudText>
+                <MudChip T="string" Color="Color.Tertiary" Variant="Variant.Filled" Label="true"><b>@matches.Count EVENTS</b></MudChip>
+            </div>
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.title" Title="Event" CellStyle="font-weight: bold" Sortable="false"/>
+            <PropertyColumn Property="x => x.MatchDate" Title="Date" Format="g" InitialDirection="SortDirection.Descending" Sortable="false"/>
+        </Columns>
+    </MudDataGrid>
 }
 
 @code {
 
-    private IEnumerable<IGrouping<string, Models.Match>> _sportMatches = [];
+    private IEnumerable<Models.Match> _sportMatches = [];
 
     protected override async Task OnInitializedAsync()
     {
         var matches = await StreamService.GetMatchesAsync(GetMatchType.AllToday);
 
         _sportMatches = matches
-            .Where(x => SportTypes.TryGet(x.category, out var _))
+            .Where(x => Models.CustomTypes.Categories.TryGet(x.category, out var _))
             .Where(x => x.MatchDate.Date == DateTime.UtcNow.AddHours(-4).Date)
-            .OrderBy(x => x.date)
-            .GroupBy(x => x.category);
+            .OrderByDescending(x => x.popular)
+            .ThenBy(x => x.date);
     }
 }
