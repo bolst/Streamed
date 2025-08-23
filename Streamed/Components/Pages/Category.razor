@@ -4,11 +4,11 @@
 
 @if (_category is not null)
 {
-    <PageTitle>@_category.Value.Title()</PageTitle>
+    <PageTitle>@_category.Title.Title()</PageTitle>
 
     <div class="mt-2 d-flex align-center flex-row gap-3">
         <MudIcon Icon="@_category.Icon" Class="@_category.IconClass" Size="Size.Large" />
-        <MudText Typo="Typo.h4"><b>@_category.Value.Title()</b></MudText>
+        <MudText Typo="Typo.h4"><b>@_category.Title.Title()</b></MudText>
         <MudChip T="string" Color="Color.Tertiary" Variant="Variant.Filled" Label="true"><b>@_matches.Count() EVENTS</b></MudChip>
     </div>
 

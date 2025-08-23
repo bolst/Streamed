@@ -25,7 +25,7 @@
                     <MudIconButton Class="@($"mx-1 {category.IconClass}")" Href="@($"/category/{category.Value}")" Icon="@category.Icon"/>
                 </MudHidden>
                 <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert>
-                    <MudButton Class="mx-1" IconClass="@category.IconClass" Href="@($"/category/{category.Value}")" StartIcon="@category.Icon">@category.Value</MudButton>
+                    <MudButton Class="mx-1" IconClass="@category.IconClass" Href="@($"/category/{category.Value}")" StartIcon="@category.Icon">@category.Title</MudButton>
                 </MudHidden>
             }
         </MudButtonGroup>

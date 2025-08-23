@@ -22,7 +22,7 @@ else
         <div class="d-flex align-center flex-row flex-wrap mb-6">
             <MudText Typo="Typo.h6">@_match.title</MudText>
             <MudFlexBreak />
-            <MudChip T="string" Text="@_category?.Value.ToUpper()" Icon="@_category?.Icon" Class="@_category?.IconClass" Variant="Variant.Text" Label="true"/>
+            <MudChip T="string" Text="@_category?.Title.ToUpper()" Icon="@_category?.Icon" Class="@_category?.IconClass" Variant="Variant.Text" Label="true"/>
             <MudChip T="string" Text="@($"{_match.MatchDate:ddd hh:mmtt} EST")" Icon="@Icons.Material.Filled.AccessTime" Color="Color.Info" Variant="Variant.Text" Label="true" />
         </div>
 
